@@ -15,7 +15,7 @@ class RemoteForm(object):
         self.readonly_fields = set(kwargs.pop('readonly', []))
         self.ordered_fields = kwargs.pop('ordering', [])
 
-        self.fieldsets = kwargs.pop('fieldsets', {})
+        self.fieldsets = getattr(self.form.Meta, 'fieldsets', [])
 
         # Make sure all passed field lists are valid
         if self.excluded_fields and not (self.all_fields >= self.excluded_fields):
@@ -57,21 +57,6 @@ class RemoteForm(object):
 
             self.fields.append(field_name)
 
-        # Validate fieldset
-        fieldset_fields = set()
-        if self.fieldsets:
-            for fieldset_name, fieldsets_data in self.fieldsets:
-                if 'fields' in fieldsets_data:
-                    fieldset_fields |= set(fieldsets_data['fields'])
-
-        if not (self.all_fields >= fieldset_fields):
-            logger.warning('Following fieldset fields are invalid %s' % (fieldset_fields - self.all_fields))
-            self.fieldsets = {}
-
-        if not (set(self.fields) >= fieldset_fields):
-            logger.warning('Following fieldset fields are excluded %s' % (fieldset_fields - set(self.fields)))
-            self.fieldsets = {}
-
     def as_dict(self):
         """
         Returns a form as a dictionary that looks like the following:
@@ -107,7 +92,13 @@ class RemoteForm(object):
         form_dict['prefix'] = self.form.prefix
         form_dict['fields'] = SortedDict()
         form_dict['errors'] = self.form.errors
-        form_dict['fieldsets'] = getattr(self.form, 'fieldsets', [])
+        fieldset_list = []
+        for fieldset_name, fieldset_data in self.fieldsets:
+            fieldset_data.update({
+                'key': fieldset_name,
+            })
+            fieldset_list.append(fieldset_data)
+        form_dict['fieldsets'] = fieldset_list
 
         initial_data = {}
 

@@ -1,12 +1,12 @@
 from django.utils.datastructures import SortedDict
 
-from django_remote_forms import fields, logger
+from django_remote_forms import fields, logger, widgets
 from django_remote_forms.utils import resolve_promise
-
 
 class RemoteForm(object):
     def __init__(self, form, *args, **kwargs):
         self.form = form
+        self._config = kwargs.pop('config', {})
 
         self.all_fields = set(self.form.fields.keys())
 
@@ -114,7 +114,10 @@ class RemoteForm(object):
 
             # Instantiate the Remote Forms equivalent of the field if possible
             # in order to retrieve the field contents as a dictionary.
-            remote_field_class_name = 'Remote%s' % field.field.__class__.__name__
+            # Use config to to check for any serializer overrides.
+            field_class = field.field.__class__.__name__
+
+            remote_field_class_name = 'Remote%s' % field_class
             try:
                 remote_field_class = getattr(fields, remote_field_class_name)
                 remote_field = remote_field_class(field, form_initial_field_data)
@@ -128,6 +131,24 @@ class RemoteForm(object):
                 field_dict['readonly'] = True
 
             form_dict['fields'][field.name] = field_dict
+
+            widget_class_name = field.field.widget.__class__.__name__
+            remote_widget_class_name = 'Remote%s' % widget_class_name
+
+            if self._config.get('widgets', {}).get(widget_class_name):
+                remote_widget_class = self._config['widgets'][widget_class_name]
+            else:
+                remote_widget_class = getattr(widgets, remote_widget_class_name)
+
+            try:
+                remote_widget = remote_widget_class(field.field.widget, name=field.name)
+            except Exception, e:
+                logger.error('Error serializing %s: %s', remote_widget_class_name, str(e))
+                widget_dict = {}
+            else:
+                widget_dict = remote_widget.as_dict()
+
+            form_dict['fields'][field.name]['widget'] = widget_dict
 
             # Load the initial data, which is a conglomerate of form initial and field initial
             if 'initial' not in form_dict['fields'][field.name]:

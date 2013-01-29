@@ -3,7 +3,7 @@ import datetime
 from django.conf import settings
 from django.utils.datastructures import SortedDict
 
-from django_remote_forms import logger, widgets
+from django_remote_forms import logger
 
 class RemoteField(object):
     """
@@ -35,28 +35,6 @@ class RemoteField(object):
         field_dict['help_text'] = self.help_text
 
         field_dict['error_messages'] = self.field.error_messages
-
-        # If the widget has an as_dict function, take advantage of it, otherwise
-        # try and hold the developers hand a bit by using the builtin remote
-        # widgets.
-        if hasattr(self.field.widget, 'as_dict') and \
-            callable(self.field.widget.as_dict):
-            widget_dict = self.field.widget.as_dict()
-        else:
-            widget_name = self.field.widget.__class__.__name__
-            remote_widget_class_name = 'Remote%s' % widget_name
-            try:
-                remote_widget_class = getattr(widgets, remote_widget_class_name)
-                remote_widget = widgets.RemoteWidget(
-                    remote_widget_class(attrs=self.field.widget.attrs), name=widget_name)
-            except Exception, e:
-                logger.error('Error serializing %s: %s', remote_widget_class_name, str(e))
-                widget_dict = {}
-            else:
-                widget_dict = remote_widget.as_dict()
-
-        field_dict['widget'] = widget_dict
-
         return field_dict
 
 

@@ -5,7 +5,6 @@ from django.utils.datastructures import SortedDict
 
 from django_remote_forms import logger, widgets
 
-
 class RemoteField(object):
     """
     A base object for being able to return a Django Form Field as a Python
@@ -44,10 +43,12 @@ class RemoteField(object):
             callable(self.field.widget.as_dict):
             widget_dict = self.field.widget.as_dict()
         else:
-            remote_widget_class_name = 'Remote%s' % self.field.widget.__class__.__name__
+            widget_name = self.field.widget.__class__.__name__
+            remote_widget_class_name = 'Remote%s' % widget_name
             try:
                 remote_widget_class = getattr(widgets, remote_widget_class_name)
-                remote_widget = remote_widget_class(attrs=self.field.widget.attrs)
+                remote_widget = widgets.RemoteWidget(
+                    remote_widget_class(attrs=self.field.widget.attrs), name=widget_name)
             except Exception, e:
                 logger.error('Error serializing %s: %s', remote_widget_class_name, str(e))
                 widget_dict = {}

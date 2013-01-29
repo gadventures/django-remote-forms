@@ -5,47 +5,49 @@ from django.utils.dates import MONTHS
 from django.utils.datastructures import SortedDict
 
 class RemoteWidget(object):
+    def __init__(self, widget, name=None):
+        self.widget = widget
+        self.name = name or self.widget.__class__.__name__
+
     def as_dict(self):
         widget_dict = SortedDict()
-        widget_dict['title'] = self.__class__.__bases__[0].__name__
-        widget_dict['is_hidden'] = self.is_hidden
-        widget_dict['needs_multipart_form'] = self.needs_multipart_form
-        widget_dict['is_localized'] = self.is_localized
-        widget_dict['is_required'] = self.is_required
-        widget_dict['attrs'] = self.build_attrs()
+        widget_dict['title'] = self.name
+        widget_dict['is_hidden'] = self.widget.is_hidden
+        widget_dict['needs_multipart_form'] = self.widget.needs_multipart_form
+        widget_dict['is_localized'] = self.widget.is_localized
+        widget_dict['is_required'] = self.widget.is_required
+        widget_dict['attrs'] = self.widget.build_attrs()
         return widget_dict
     
 class RemoteInput(Input, RemoteWidget):
     def as_dict(self):
         widget_dict = super(RemoteInput, self).as_dict()
-        widget_dict['input_type'] = self.input_type
+        widget_dict['input_type'] = self.widget.input_type
         return widget_dict
 
-class RemoteTextInput(Input, RemoteWidget):
+class RemoteTextInput(RemoteInput):
     def as_dict(self):
         return super(RemoteTextInput, self).as_dict()
 
-
-class RemotePasswordInput(Input, RemoteWidget):
+class RemotePasswordInput(RemoteInput):
     def as_dict(self):
         return super(RemotePasswordInput, self).as_dict()
 
-
-class RemoteHiddenInput(Input, RemoteWidget):
+class RemoteHiddenInput(RemoteInput):
     def as_dict(self):
         return super(RemoteHiddenInput, self).as_dict()
 
-class RemoteMultipleHiddenInput(Input, RemoteWidget):
+class RemoteMultipleHiddenInput(RemoteHiddenInput):
     def as_dict(self):
         widget_dict = super(RemoteMultipleHiddenInput, self).as_dict()
         widget_dict['choices'] = self.choices
         return widget_dict
 
-class RemoteFileInput(Input, RemoteWidget):
+class RemoteFileInput(RemoteInput):
     def as_dict(self):
         return super(RemoteFileInput, self).as_dict()
 
-class RemoteClearableFileInput(Input, RemoteWidget):
+class RemoteClearableFileInput(RemoteFileInput):
     def as_dict(self):
         widget_dict = super(RemoteClearableFileInput, self).as_dict()
         widget_dict['initial_text'] = self.initial_text
@@ -53,13 +55,13 @@ class RemoteClearableFileInput(Input, RemoteWidget):
         widget_dict['clear_checkbox_label'] = self.clear_checkbox_label
         return widget_dict
 
-class RemoteTextarea(Input, RemoteWidget):
+class RemoteTextarea(RemoteInput):
     def as_dict(self):
         widget_dict = super(RemoteTextarea, self).as_dict()
         widget_dict['input_type'] = 'textarea'
         return widget_dict
 
-class RemoteTimeInput(Input, RemoteWidget):
+class RemoteTimeInput(RemoteInput):
     def as_dict(self):
         widget_dict = super(RemoteTimeInput, self).as_dict()
 
@@ -126,7 +128,6 @@ class RemoteSelect(Input, RemoteWidget):
 class RemoteNullBooleanSelect(RemoteSelect):
     def as_dict(self):
         return super(RemoteNullBooleanSelect, self).as_dict()
-
 
 class RemoteSelectMultiple(RemoteSelect):
     def as_dict(self):

@@ -115,14 +115,16 @@ class RemoteForm(object):
             # Instantiate the Remote Forms equivalent of the field if possible
             # in order to retrieve the field contents as a dictionary.
             # Use config to to check for any serializer overrides.
-            field_class = field.field.__class__.__name__
+            field_class_name = field.field.__class__.__name__
+            if self._config.get('fields', {}).get(field_class_name):
+                remote_field_class = self._config['fields'][field_class_name]
+            else:
+                remote_field_class = getattr(fields, 'Remote%s' % field_class_name)
 
-            remote_field_class_name = 'Remote%s' % field_class
             try:
-                remote_field_class = getattr(fields, remote_field_class_name)
                 remote_field = remote_field_class(field, form_initial_field_data)
             except Exception, e:
-                logger.warning('Error serializing field %s: %s', remote_field_class_name, str(e))
+                logger.warning('Error serializing field %s: %s', remote_field_class, str(e))
                 field_dict = {}
             else:
                 field_dict = remote_field.as_dict()
@@ -133,17 +135,15 @@ class RemoteForm(object):
             form_dict['fields'][field.name] = field_dict
 
             widget_class_name = field.field.widget.__class__.__name__
-            remote_widget_class_name = 'Remote%s' % widget_class_name
-
             if self._config.get('widgets', {}).get(widget_class_name):
                 remote_widget_class = self._config['widgets'][widget_class_name]
             else:
-                remote_widget_class = getattr(widgets, remote_widget_class_name)
+                remote_widget_class = getattr(widgets, 'Remote%s' % widget_class_name)
 
             try:
                 remote_widget = remote_widget_class(field.field.widget, name=field.name)
             except Exception, e:
-                logger.error('Error serializing %s: %s', remote_widget_class_name, str(e))
+                logger.error('Error serializing %s: %s', remote_widget_class, str(e))
                 widget_dict = {}
             else:
                 widget_dict = remote_widget.as_dict()

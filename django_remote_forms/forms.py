@@ -102,7 +102,7 @@ class RemoteForm(object):
 
         initial_data = {}
 
-        for field in (x for x in self.form if x.name in self.fields):
+        for bound_field in (x for x in self.form if x.name in self.fields):
             # Retrieve the initial data from the form itself if it exists so
             # that we properly handle which initial data should be returned in
             # the dictionary.
@@ -110,51 +110,51 @@ class RemoteForm(object):
             # Please refer to the Django Form API documentation for details on
             # why this is necessary:
             # https://docs.djangoproject.com/en/dev/ref/forms/api/#dynamic-initial-values
-            form_initial_field_data = self.form.initial.get(field.name)
+            form_initial_field_data = self.form.initial.get(bound_field.name)
 
             # Instantiate the Remote Forms equivalent of the field if possible
             # in order to retrieve the field contents as a dictionary.
             # Use config to to check for any serializer overrides.
-            field_class_name = field.field.__class__.__name__
+            field_class_name = bound_field.field.__class__.__name__
             if self._config.get('fields', {}).get(field_class_name):
                 remote_field_class = self._config['fields'][field_class_name]
             else:
                 remote_field_class = getattr(fields, 'Remote%s' % field_class_name)
 
             try:
-                remote_field = remote_field_class(field, form_initial_field_data)
+                remote_field = remote_field_class(bound_field, form_initial_field_data)
             except Exception, e:
                 logger.warning('Error serializing field %s: %s', remote_field_class, str(e))
                 field_dict = {}
             else:
                 field_dict = remote_field.as_dict()
 
-            if field.name in self.readonly_fields:
+            if bound_field.name in self.readonly_fields:
                 field_dict['readonly'] = True
 
-            form_dict['fields'][field.name] = field_dict
+            form_dict['fields'][bound_field.name] = field_dict
 
-            widget_class_name = field.field.widget.__class__.__name__
+            widget_class_name = bound_field.field.widget.__class__.__name__
             if self._config.get('widgets', {}).get(widget_class_name):
                 remote_widget_class = self._config['widgets'][widget_class_name]
             else:
                 remote_widget_class = getattr(widgets, 'Remote%s' % widget_class_name)
 
             try:
-                remote_widget = remote_widget_class(field.field.widget, name=field.name)
+                remote_widget = remote_widget_class(bound_field.field.widget, name=bound_field.name)
             except Exception, e:
                 logger.error('Error serializing %s: %s', remote_widget_class, str(e))
                 widget_dict = {}
             else:
                 widget_dict = remote_widget.as_dict()
 
-            form_dict['fields'][field.name]['widget'] = widget_dict
+            form_dict['fields'][bound_field.name]['widget'] = widget_dict
 
             # Load the initial data, which is a conglomerate of form initial and field initial
-            if 'initial' not in form_dict['fields'][field.name]:
-                form_dict['fields'][field.name]['initial'] = None
+            if 'initial' not in form_dict['fields'][bound_field.name]:
+                form_dict['fields'][bound_field.name]['initial'] = None
 
-            initial_data[field.name] = form_dict['fields'][field.name]['initial']
+            initial_data[bound_field.name] = form_dict['fields'][bound_field.name]['initial']
 
         if self.form.data:
             form_dict['data'] = self.form.data

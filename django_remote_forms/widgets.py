@@ -78,6 +78,10 @@ class RemoteDateInput(RemoteWidget):
 
         widget_dict['input_type'] = 'date'
 
+        years = self.widget.years
+        if not callable(self.widget.years):
+            years = lambda: self.widget.years
+
         current_year = datetime.datetime.now().year
         widget_dict['choices'] = [{
             'title': 'day',
@@ -87,7 +91,7 @@ class RemoteDateInput(RemoteWidget):
             'data': [{'key': x, 'value': y} for (x, y) in MONTHS.items()]
         }, {
             'title': 'year',
-            'data': [{'key': x, 'value': x} for x in range(current_year - 100, current_year + 1)]
+            'data': [{'key': x, 'value': x} for x in years()]
         }]
         return widget_dict
 

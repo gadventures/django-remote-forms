@@ -109,7 +109,7 @@ class RemoteCheckboxInput(RemoteWidget):
 
         # If check test is None then the input should accept null values
         check_test = None
-        if self.check_test is not None:
+        if self.widget.check_test is not None:
             check_test = True
 
         widget_dict['check_test'] = check_test

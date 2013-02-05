@@ -15,7 +15,9 @@ class RemoteForm(object):
         self.readonly_fields = set(kwargs.pop('readonly', []))
         self.ordered_fields = kwargs.pop('ordering', [])
 
-        self.fieldsets = getattr(self.form.Meta, 'fieldsets', [])
+        self.fieldsets = []                                                                                                                                                                               
+        if(hasattr(self.form, 'Meta')):                                                                                                                                                                   
+            self.fieldsets = getattr(self.form.Meta, 'fieldsets', []) 
 
         # Make sure all passed field lists are valid
         if self.excluded_fields and not (self.all_fields >= self.excluded_fields):

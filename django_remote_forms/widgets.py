@@ -119,15 +119,15 @@ class RemoteCheckboxInput(RemoteWidget):
 class RemoteSelect(RemoteWidget):
     def as_dict(self):
         widget_dict = super(RemoteSelect, self).as_dict()
+        widget_dict['input_type'] = 'select'
 
         widget_dict['choices'] = []
-        for key, value in self.choices:
+        for key, value in self.widget.choices:
             widget_dict['choices'].append({
                 'value': key,
                 'display': value
             })
 
-        widget_dict['input_type'] = 'select'
         return widget_dict
 
 class RemoteNullBooleanSelect(RemoteSelect):

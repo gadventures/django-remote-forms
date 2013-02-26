@@ -23,7 +23,11 @@ class RemoteWidget(object):
 class RemoteInput(RemoteWidget):
     def as_dict(self):
         widget_dict = super(RemoteInput, self).as_dict()
-        widget_dict['input_type'] = self.widget.input_type
+        try:
+            widget_dict['input_type'] = self.widget.input_type
+        except AttributeError:
+            pass
+
         return widget_dict
 
 class RemoteTextInput(RemoteInput):

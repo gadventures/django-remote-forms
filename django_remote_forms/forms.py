@@ -143,7 +143,8 @@ class RemoteForm(object):
                 remote_widget_class = getattr(widgets, 'Remote%s' % widget_class_name)
 
             try:
-                remote_widget = remote_widget_class(bound_field.field.widget, name=bound_field.name)
+                remote_widget = remote_widget_class(remote_field.widget,
+                        name=remote_field.name, required=remote_field.required)
             except Exception, e:
                 logger.error('Error serializing %s: %s', remote_widget_class, str(e))
                 widget_dict = {}

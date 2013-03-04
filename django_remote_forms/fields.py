@@ -20,10 +20,12 @@ class RemoteField(object):
     """
 
     def __init__(self, bound_field, form_initial_data=None):
+        self.widget = bound_field.field.widget
         self.name = bound_field.name
         self.label = bound_field.label
         self.help_text = bound_field.help_text
         self.field = bound_field.field
+        self.required = bound_field.field.required
         self.form_initial_data = form_initial_data
 
     def as_dict(self):

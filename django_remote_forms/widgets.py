@@ -5,9 +5,10 @@ from django.utils.dates import MONTHS
 from django.utils.datastructures import SortedDict
 
 class RemoteWidget(object):
-    def __init__(self, widget, name=None):
+    def __init__(self, widget, name=None, required=False):
         self.widget = widget
         self.name = name or self.widget.__class__.__name__
+        self.required = required
 
     def as_dict(self):
         widget_dict = SortedDict()
@@ -77,6 +78,15 @@ class RemoteTimeInput(RemoteWidget):
         return widget_dict
 
 class RemoteDateInput(RemoteWidget):
+    def create_select(self, name, choices):
+        if not self.required:
+            choices.insert(0, self.widget.none_value)
+
+        return {
+            'title': name,
+            'data': choices,
+        }
+
     def as_dict(self):
         widget_dict = super(RemoteDateInput, self).as_dict()
 
@@ -87,18 +97,18 @@ class RemoteDateInput(RemoteWidget):
             years = lambda: self.widget.years
 
         current_year = datetime.datetime.now().year
-        widget_dict['choices'] = [{
-            'title': 'day',
-            'data': [{'key': x, 'value': x} for x in range(1, 32)]
-        }, {
-            'title': 'month',
-            'data': [{'key': x, 'value': y} for (x, y) in MONTHS.items()]
-        }, {
-            'title': 'year',
-            'data': [{'key': x, 'value': x} for x in years()]
-        }]
-        return widget_dict
 
+        choices = [{'key': i, 'value': i} for i in range(1, 32)]
+        day_choices = self.create_select('day', choices)
+
+        choices = [{'key': i, 'value': j} for (i, j) in MONTHS.iteritems()]
+        month_choices = self.create_select('month', choices)
+
+        choices = [{'key': i, 'value': i} for i in years()]
+        year_choices = self.create_select('year', choices)
+
+        widget_dict['choices'] = [day_choices, month_choices, year_choices]
+        return widget_dict
 
 class RemoteDateTimeInput(RemoteWidget):
     def as_dict(self):

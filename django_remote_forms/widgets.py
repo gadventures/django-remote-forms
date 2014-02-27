@@ -1,6 +1,3 @@
-import datetime
-
-from django.forms.widgets import Widget, Input
 from django.utils.dates import MONTHS
 from django.utils.datastructures import SortedDict
 
@@ -20,7 +17,7 @@ class RemoteWidget(object):
         widget_dict['attrs'] = self.widget.build_attrs()
 
         return widget_dict
-    
+
 class RemoteInput(RemoteWidget):
     def as_dict(self):
         widget_dict = super(RemoteInput, self).as_dict()
@@ -96,15 +93,13 @@ class RemoteDateInput(RemoteWidget):
         if not callable(self.widget.years):
             years = lambda: self.widget.years
 
-        current_year = datetime.datetime.now().year
-
-        choices = [{'key': i, 'value': i} for i in range(1, 32)]
+        choices = [{'key': "%02d" % i, 'value': i} for i in range(1, 32)]
         day_choices = self.create_select('day', choices)
 
-        choices = [{'key': i, 'value': j} for (i, j) in MONTHS.iteritems()]
+        choices = [{'key': "%02d" % i, 'value': j} for (i, j) in MONTHS.iteritems()]
         month_choices = self.create_select('month', choices)
 
-        choices = [{'key': i, 'value': i} for i in years()]
+        choices = [{'key': "%s" % i, 'value': i} for i in years()]
         year_choices = self.create_select('year', choices)
 
         widget_dict['choices'] = [day_choices, month_choices, year_choices]

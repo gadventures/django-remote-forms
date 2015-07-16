@@ -45,9 +45,9 @@ class RemoteForm(object):
         self.excluded_fields |= (self.included_fields - self.all_fields)
 
         if not self.ordered_fields:
-            if self.form.fields.keyOrder:
+            try:
                 self.ordered_fields = self.form.fields.keyOrder
-            else:
+            except AttributeError:
                 self.ordered_fields = self.form.fields.keys()
 
         self.fields = []

@@ -1,7 +1,7 @@
 import datetime
 
 from django.conf import settings
-from django.utils.datastructures import SortedDict
+from collections import OrderedDict
 
 from django_remote_forms import logger
 
@@ -29,7 +29,7 @@ class RemoteField(object):
         self.form_initial_data = form_initial_data
 
     def as_dict(self):
-        field_dict = SortedDict()
+        field_dict = OrderedDict()
         field_dict['title'] = self.name
         field_dict['required'] = self.field.required
         field_dict['label'] = self.label

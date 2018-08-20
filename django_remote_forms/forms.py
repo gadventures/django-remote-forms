@@ -1,4 +1,4 @@
-from django.utils.datastructures import SortedDict
+from collections import OrderedDict
 
 from django_remote_forms import fields, logger, widgets
 from django_remote_forms.utils import resolve_promise
@@ -15,9 +15,9 @@ class RemoteForm(object):
         self.readonly_fields = set(kwargs.pop('readonly', []))
         self.ordered_fields = kwargs.pop('ordering', [])
 
-        self.fieldsets = []                                                                                                                                                                               
-        if(hasattr(self.form, 'Meta')):                                                                                                                                                                   
-            self.fieldsets = getattr(self.form.Meta, 'fieldsets', []) 
+        self.fieldsets = []
+        if(hasattr(self.form, 'Meta')):
+            self.fieldsets = getattr(self.form.Meta, 'fieldsets', [])
 
         # Make sure all passed field lists are valid
         if self.excluded_fields and not (self.all_fields >= self.excluded_fields):
@@ -86,13 +86,13 @@ class RemoteForm(object):
             }
         }
         """
-        form_dict = SortedDict()
+        form_dict = OrderedDict()
         form_dict['title'] = self.form.__class__.__name__
         form_dict['non_field_errors'] = self.form.non_field_errors()
         form_dict['label_suffix'] = self.form.label_suffix
         form_dict['is_bound'] = self.form.is_bound
         form_dict['prefix'] = self.form.prefix
-        form_dict['fields'] = SortedDict()
+        form_dict['fields'] = OrderedDict()
         form_dict['errors'] = self.form.errors
         fieldset_list = []
         for fieldset_name, fieldset_data in self.fieldsets:

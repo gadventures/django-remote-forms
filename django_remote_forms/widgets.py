@@ -15,7 +15,7 @@ class RemoteWidget(object):
         widget_dict['needs_multipart_form'] = self.widget.needs_multipart_form
         widget_dict['is_localized'] = self.widget.is_localized
         widget_dict['is_required'] = self.widget.is_required
-        widget_dict['attrs'] = self.widget.build_attrs()
+        widget_dict['attrs'] = self.widget.attrs
 
         return widget_dict
 
